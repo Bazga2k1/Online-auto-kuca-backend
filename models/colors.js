@@ -14,11 +14,11 @@ const colorSchema = new mongoose.Schema({
     },
 
     priceC: {
-        type: Double,
+        type: Number,
         required: true
     },
 
-    imageUrl: {
+    colorImageUrl: {
         type: String,
         required: true,
         unique: true
@@ -26,5 +26,5 @@ const colorSchema = new mongoose.Schema({
 
 });
 
-const Color = moongose.model('color', colorSchema);
+const Color = mongoose.model('color', colorSchema);
 export default Color;

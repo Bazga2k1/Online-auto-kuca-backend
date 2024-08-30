@@ -15,11 +15,11 @@ const interiorSchema = new mongoose.Schema({
     },
 
     priceI: {
-        type: Double,
+        type: Number,
         required: true
     },
 
-    imageUrl: {
+    interiorImageUrl: {
         type: String,
         required: true,
         unique: true
@@ -27,5 +27,5 @@ const interiorSchema = new mongoose.Schema({
 
 });
 
-const Interior = moongose.model('interior', interiorSchema);
+const Interior = mongoose.model('interior', interiorSchema);
 export default Interior;

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const engineSchema = new moongose.Schema({
+const engineSchema = new mongoose.Schema({
 
     engineName: {
         type: String,
@@ -9,22 +9,22 @@ const engineSchema = new moongose.Schema({
     },
 
     displacement: {
-        type: Int32,
+        type: Number,
         required: true
     },
 
     power: {
-        type: Int32,
+        type: Number,
         required: true
     },
 
     torque: {
-        type: Int32,
+        type: Number,
         required: true
     },
 
     economy: {
-        type: Double,
+        type: Number,
         required: true
     },
 
@@ -34,16 +34,16 @@ const engineSchema = new moongose.Schema({
     },
 
     priceE: {
-        type: Double,
+        type: Number,
         required: true
     },
 
-    imageUrl: {
+    engineImageUrl: {
         type: String,
         required: true
     }
 
 });
 
-const Engine = moongose.model('engine', engineSchema);
+const Engine = mongoose.model('engine', engineSchema);
 export default Engine;

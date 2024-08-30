@@ -14,11 +14,11 @@ const rimSchema = new mongoose.Schema({
     },
 
     priceR: {
-        type: Double,
+        type: Number,
         required: true
     },
 
-    imageUrl: {
+    rimImageUrl: {
         type: String,
         required: true,
         unique: true
@@ -26,5 +26,5 @@ const rimSchema = new mongoose.Schema({
 
 });
 
-const Rim = moongose.model('rim', rimSchema);
+const Rim = mongoose.model('rim', rimSchema);
 export default Rim;

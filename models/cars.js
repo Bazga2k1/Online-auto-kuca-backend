@@ -9,11 +9,11 @@ const carSchema = new mongoose.Schema({
     },
 
     price: {
-        type: Double,
+        type: Number,
         required: true,
     },
 
-    imageUrl: {
+    carImageUrl: {
         type: String,
         required: true,
         unique: true

@@ -3,18 +3,21 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import methodsInv from "./handlers/inventoryHandlers.js";
+import bodyParser from "body-parser";
 dotenv.config({ path: `./.env` });
 
 const app = express();
-const router = express.Router();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
+app.use(bodyParser.json({ limit: '40mb' }));
+app.use(bodyParser.urlencoded({ limit: '40mb', extended: true }));
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected"))
+  mongoose.connect(process.env.MONGO_URI,)
+  .then(() => app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
+  }))
   .catch((error) => console.log(error));
 
 console.log("Loaded .env file with MONGO_URI:", process.env.MONGO_URI);
@@ -44,7 +47,7 @@ app.post("/register", (req, res) => {
 
 
 // Glavne rute
-router.route('/').get(async (req, res) => {
+app.get('/cars', async (req, res) => {
     try {
         const cars = await methodsInv.getCars();
         res.status(200).json(cars);
@@ -52,5 +55,17 @@ router.route('/').get(async (req, res) => {
     } catch (error){
         console.log("The error causing the failed fetch: ", error)
         res.status(500).json({ error: "Failed to fetch inventory!" });
+    }
+});
+
+app.post('/cars', async (req, res) => {
+	try {
+        const { carName, price, carImageUrl } = req.body;
+        const newCar = await methodsInv.addCar({ carName, price, carImageUrl });
+        res.status(201).json(newCar);
+		console.log("New car added!");
+    } catch (error) {
+        console.error("Error adding new car:", error);
+        res.status(500).json({ error: "Failed to add car!" });
     }
 });

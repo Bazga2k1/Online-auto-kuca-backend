@@ -6,6 +6,8 @@ import Color from "../models/colors.js";
 import Engine from "../models/engines.js";
 import Interior from "../models/interiors.js";
 import Rim from "../models/rims.js";
+import Order from "../models/orders.js";
+import User from "../models/users.js";
 
 /* ------------------------------------------ Automobili ------------------------------------------ */
 
@@ -74,7 +76,7 @@ async function addInterior(interiorData) { // Dodavanje novog interijera
 /* ------------------------------------------- Naplatci ------------------------------------------- */
 
 async function getRims() { // Getter za naplatke u inventaru
-    const rims = await Rim.find();
+    const rims = await Rim.find().sort({ rimSize: 1, priceR: 1 });
     return rims.map((Rim) => Rim.toObject());
 };
 
@@ -82,7 +84,39 @@ async function addRim(rimData) { // Dodavanje novog seta naplataka
     const rim = new Rim(rimData);
     await rim.save();
     return rim.toObject();
-}
+};
+
+/* ------------------------------------------------------------------------------------------------ */
+
+
+/* ------------------------------------------- Narudžbe ------------------------------------------- */
+
+async function getOrders() {
+    const orders = await Order.find();
+    return orders.map((order) => order.toObject());
+};
+
+async function addOrder(orderData) {
+    const order = new Order(orderData);
+    await order.save();
+    return order.toObject();
+};
+
+/* ------------------------------------------------------------------------------------------------ */
+
+
+/* ------------------------------------------- Korisnici ------------------------------------------- */
+
+async function getUsers() {
+    const users = await User.find();
+    return users.map((user) => user.toObject());
+};
+
+async function addUser(userData) {
+    const user = new User(userData);
+    await user.save();
+    return user.toObject();
+};
 
 /* ------------------------------------------------------------------------------------------------ */
 
@@ -102,7 +136,13 @@ const methodsInv = {
     addInterior,
 
     getRims,
-    addRim
+    addRim,
+
+    getOrders,
+    addOrder,
+
+    getUsers,
+    addUser
 };
 
 export default methodsInv;

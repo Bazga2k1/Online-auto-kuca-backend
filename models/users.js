@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
     },
 
     userOIB: {
-        type: Number,
+        type: String,
         required: true
     },
 

@@ -9,15 +9,15 @@ function _excludeProperties(obj, excludedProps) {
       result = rest;
     });
     return result;
-  }
-  
+};
+
 async function _generatePassword(password) { // Hashiranje lozinke
     return await bcrypt.hash(password, 10);
-}
+};
 
-async function _comparePasswords(password, hashPassword) {
+async function _comparePasswords(password, hashPassword) { // Usporedba lozinki hashiranjem unesene lozinke
     return bcrypt.compare(password, hashPassword);
-}
+};
 
 async function getUsers() {
     const users = await User.find();
@@ -31,7 +31,7 @@ async function addUser(userData) {
     await user.save();
     return _excludeProperties(user.toObject(), ["password"]);
 };
-  
+
 async function checkUser(email, password) {
     const user = await User.findOne({ email: email });
     if (!user) {
@@ -40,12 +40,18 @@ async function checkUser(email, password) {
     const pass = await _comparePasswords(password, user.password);
     
     return pass ? _excludeProperties(user.toObject(), ["password"]) : null;
+};
+
+async function findUserByEmail(email) {
+    return await User.findOne({ email });
 }
+
 
 const methodsUsr = {
     getUsers,
     addUser,
-    checkUser
+    checkUser,
+    findUserByEmail
 };
 
 export default methodsUsr;

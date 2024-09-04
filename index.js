@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import methodsInv from "./handlers/inventoryHandlers.js";
 import methodsUsr from "./handlers/userHandlers.js";
 import bodyParser from "body-parser";
+import Order from "./models/orders.js";
 dotenv.config({ path: `./.env` });
 
 const app = express();
@@ -45,6 +46,37 @@ app.post("/register", async (req, res) => {
 });
 
 /* ------------------------------------------------------------------------------------------------ */
+
+
+/* ------------------------------------------- Prijava ------------------------------------------- */
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+  
+    try {
+      const user = await methodsInv.findUserByEmail(email);
+  
+      if (!user) {
+        return res.status(400).json({ error: "Invalid credentials" });
+    };
+  
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ error: "Invalid credentials" });
+    };
+  
+      const token = jwt.sign(
+        { userId: user._id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '2h' }
+    );
+
+      res.json({ token });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ error: "Server error" });
+    };
+});
+/* ----------------------------------------------------------------------------------------------- */
 
 
 // Glavne rute
@@ -193,11 +225,27 @@ app.post('/orders', async (req, res) => {
       const orderData = req.body;
       const newOrder = await methodsInv.addOrder(orderData);
       res.status(201).json(newOrder);
+      console.log("Narudžba zaprimljena!");
   } catch (error) {
       console.error("Error adding new order:", error);
       res.status(500).json({ error: "Failed to add order!" });
   }
 });
+
+app.post('/orders/find', async (req, res) => {
+    try {
+      const order = await Order.findOne(req.body);
+  
+      if (!order) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+  
+      res.status(200).json({ orderId: order._id });
+    } catch (error) {
+      console.error("Error finding order:", error);
+      res.status(500).json({ error: "Failed to find order" });
+    }
+  });
 
 /* ------------------------------------------------------------------------------------------------ */
 

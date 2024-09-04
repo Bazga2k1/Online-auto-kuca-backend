@@ -60,6 +60,10 @@ const orderSchema = new mongoose.Schema({
     deliveryLocation: {
         type: String,
         required: true,
+    },
+
+    user: {
+        type: String
     }
 
 });

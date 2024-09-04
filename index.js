@@ -3,6 +3,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import methodsInv from "./handlers/inventoryHandlers.js";
+import methodsUsr from "./handlers/userHandlers.js";
 import bodyParser from "body-parser";
 dotenv.config({ path: `./.env` });
 
@@ -22,28 +23,28 @@ app.use(bodyParser.urlencoded({ limit: '40mb', extended: true }));
 
 console.log("Loaded .env file with MONGO_URI:", process.env.MONGO_URI);
 
-// Registracija nove firme
-app.post("/register", (req, res) => {
-    const { ime_firme, ime_prezime, oib, email, password } = req.body;
-  
-    if (users.some((user) => user.ime_firme === ime_firme && user.oib === oib)) { // Provjera postojanja registracije
-      return res.status(400).json({ error: "Ova firma je već registrirana!" });
-    }
-  
-    const newUser = {
-      id: users.length + 1,
-      ime_firme,
-      ime_prezime,
-      oib,
-      email,
-      password 
-    };
-  
-    users.push(newUser);
-  
-    res.status(201).json({ id: newUser.id, ime_firme: newUser.ime_firme, oib: newUser.oib });
+/* ----------------------------------------- Registracija ----------------------------------------- */
+app.post("/register", async (req, res) => {
+  const { companyName, ownerFullName, userOIB, email, password } = req.body;
 
+  try {
+      const existingUser = await methodsUsr.findUserByCompanyAndOIB(companyName, userOIB);
+
+      if (existingUser) { // Provjera postojanja firme u bazi
+          return res.status(400).json({ error: "Ova firma je već registrirana!" });
+      }
+
+      const newUser = await methodsUsr.addUser({ companyName, ownerFullName, userOIB, email, password });
+
+      res.status(201).json({ companyName: newUser.companyName, userOIB: newUser.userOIB });
+      console.log("Firma", companyName, "uspješno registrirana sa vlasnikom", ownerFullName);
+  } catch (error) {
+      console.error("Error during registration:", error);
+      res.status(500).json({ error: "Failed to register user!" });
+  }
 });
+
+/* ------------------------------------------------------------------------------------------------ */
 
 
 // Glavne rute
@@ -113,9 +114,10 @@ app.get('/engines', async (req, res) => {
 
 app.post('/engines', async (req, res) => {
   try {
-      const { engineName, horsepower } = req.body;
-      const newEngine = await methodsInv.addEngine({ engineName, horsepower });
+      const { engineName, displacement, power, torque, economy, fuelType, priceE, engineImageUrl } = req.body;
+      const newEngine = await methodsInv.addEngine({ engineName, displacement, power, torque, economy, fuelType, priceE, engineImageUrl });
       res.status(201).json(newEngine);
+      console.log("New engine", engineName, "added!");
   } catch (error) {
       console.error("Error adding new engine:", error);
       res.status(500).json({ error: "Failed to add engine!" });
@@ -138,8 +140,8 @@ app.get('/interiors', async (req, res) => {
 
 app.post('/interiors', async (req, res) => {
   try {
-      const { interiorType, material } = req.body;
-      const newInterior = await methodsInv.addInterior({ interiorType, material });
+      const { interiorName, description, priceI, interiorImageUrl } = req.body;
+      const newInterior = await methodsInv.addInterior({ interiorName, description, priceI, interiorImageUrl });
       res.status(201).json(newInterior);
   } catch (error) {
       console.error("Error adding new interior:", error);
@@ -163,8 +165,8 @@ app.get('/colors', async (req, res) => {
 
 app.post('/colors', async (req, res) => {
   try {
-      const { colorName, hexValue } = req.body;
-      const newColor = await methodsInv.addColor({ colorName, hexValue });
+      const { colorName, type, priceC, colorImageUrl } = req.body;
+      const newColor = await methodsInv.addColor({ colorName, type, priceC, colorImageUrl });
       res.status(201).json(newColor);
   } catch (error) {
       console.error("Error adding new color:", error);

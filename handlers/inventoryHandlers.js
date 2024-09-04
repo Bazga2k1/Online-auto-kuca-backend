@@ -1,18 +1,14 @@
-import mongoose from "mongoose";
-
-// Modeli
 import Car from "../models/cars.js";
 import Color from "../models/colors.js";
 import Engine from "../models/engines.js";
 import Interior from "../models/interiors.js";
 import Rim from "../models/rims.js";
 import Order from "../models/orders.js";
-import User from "../models/users.js";
 
 /* ------------------------------------------ Automobili ------------------------------------------ */
 
 async function getCars() { // Getter za automobile u inventaru
-    const cars = await Car.find();
+    const cars = await Car.find().sort({ carName: 1 });
     return cars.map((Car) => Car.toObject());
 };
 
@@ -28,7 +24,7 @@ async function addCar(carData) { // Dodavanje novog automobila
 /* --------------------------------------------- Boje --------------------------------------------- */
 
 async function getColors() { // Getter za boje u inventaru
-    const colors = await Color.find();
+    const colors = await Color.find().sort({ priceC: 1 });
     return colors.map((Color) => Color.toObject());
 };
 
@@ -44,7 +40,7 @@ async function addColor(colorData) { // Dodavanje nove boje
 /* -------------------------------------------- Motori -------------------------------------------- */
 
 async function getEngines() { // Getter za motore u inventaru
-    const engines = await Engine.find();
+    const engines = await Engine.find().sort({ fuelType: 1, priceE: 1 });
     return engines.map((Engine) => Engine.toObject());
 };
 
@@ -105,22 +101,6 @@ async function addOrder(orderData) {
 /* ------------------------------------------------------------------------------------------------ */
 
 
-/* ------------------------------------------- Korisnici ------------------------------------------- */
-
-async function getUsers() {
-    const users = await User.find();
-    return users.map((user) => user.toObject());
-};
-
-async function addUser(userData) {
-    const user = new User(userData);
-    await user.save();
-    return user.toObject();
-};
-
-/* ------------------------------------------------------------------------------------------------ */
-
-
 // Export metoda
 const methodsInv = {
     getCars,
@@ -139,10 +119,7 @@ const methodsInv = {
     addRim,
 
     getOrders,
-    addOrder,
-
-    getUsers,
-    addUser
+    addOrder
 };
 
 export default methodsInv;

@@ -2,9 +2,12 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import methodsInv from "./handlers/inventoryHandlers.js";
 import methodsUsr from "./handlers/userHandlers.js";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import Order from "./models/orders.js";
 dotenv.config({ path: `./.env` });
 
@@ -15,12 +18,13 @@ app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json({ limit: '40mb' }));
 app.use(bodyParser.urlencoded({ limit: '40mb', extended: true }));
+app.use(cookieParser());
 
-  mongoose.connect(process.env.MONGO_URI,)
+mongoose.connect(process.env.MONGO_URI,)
   .then(() => app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
   }))
-  .catch((error) => console.log(error));
+.catch((error) => console.log(error));
 
 console.log("Loaded .env file with MONGO_URI:", process.env.MONGO_URI);
 
@@ -29,7 +33,7 @@ app.post("/register", async (req, res) => {
   const { companyName, ownerFullName, userOIB, email, password } = req.body;
 
   try {
-      const existingUser = await methodsUsr.findUserByCompanyAndOIB(companyName, userOIB);
+      const existingUser = await methodsUsr.findCompany(companyName, userOIB);
 
       if (existingUser) { // Provjera postojanja firme u bazi
           return res.status(400).json({ error: "Ova firma je već registrirana!" });
@@ -53,10 +57,10 @@ app.post('/login', async (req, res) => {
     const { email, password } = req.body;
   
     try {
-      const user = await methodsInv.findUserByEmail(email);
+      const user = await methodsUsr.findUserByEmail(email);
   
       if (!user) {
-        return res.status(400).json({ error: "Invalid credentials" });
+        return res.status(400).json({ error: "User not found!" });
     };
   
       const isMatch = await bcrypt.compare(password, user.password);
@@ -66,8 +70,7 @@ app.post('/login', async (req, res) => {
   
       const token = jwt.sign(
         { userId: user._id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: '2h' }
+        process.env.JWT_SECRET_KEY
     );
 
       res.json({ token });
@@ -75,6 +78,28 @@ app.post('/login', async (req, res) => {
       console.error("Login error:", error);
       res.status(500).json({ error: "Server error" });
     };
+});
+
+// Provjera tokena
+const verifyToken = (req, res, next) => {
+  const token = req.cookies.token || req.headers['authorization'];
+
+  if (!token) return res.status(401).json({ isAuthenticated: false });
+
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+    if (err) return res.status(403).json({ isAuthenticated: false });
+    req.user = decoded;
+    next();
+  });
+};
+
+app.get('/login/auth-status', verifyToken, (req, res) => { // Provjera autentikacije
+  res.json({ isAuthenticated: true, user: req.user });
+});
+
+app.post('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.json({ message: 'Logged out successfully' });
 });
 /* ----------------------------------------------------------------------------------------------- */
 
@@ -253,7 +278,7 @@ app.post('/orders/find', async (req, res) => {
 /* ------------------------------------------- Korisnici ------------------------------------------- */
 app.get('/users', async (req, res) => {
   try {
-      const users = await methodsInv.getUsers();
+      const users = await methodsUsr.getUsers();
       res.status(200).json(users);
   } catch (error) {
       console.error("Error fetching users:", error);
@@ -264,7 +289,7 @@ app.get('/users', async (req, res) => {
 app.post('/users', async (req, res) => {
   try {
       const { companyName, ownerFullName, userOIB, email, password } = req.body;
-      const newUser = await methodsInv.addUser({ companyName, ownerFullName, userOIB, email, password });
+      const newUser = await methodsUsr.addUser({ companyName, ownerFullName, userOIB, email, password });
       res.status(201).json(newUser);
   } catch (error) {
       console.error("Error adding new user:", error);

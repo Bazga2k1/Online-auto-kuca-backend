@@ -44,14 +44,19 @@ async function checkUser(email, password) {
 
 async function findUserByEmail(email) {
     return await User.findOne({ email });
-}
+};
+
+async function findCompany(companyName, userOIB){
+    return await User.findOne({ companyName, userOIB });
+};
 
 
 const methodsUsr = {
     getUsers,
     addUser,
     checkUser,
-    findUserByEmail
+    findUserByEmail,
+    findCompany
 };
 
 export default methodsUsr;

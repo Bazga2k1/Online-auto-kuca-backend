@@ -80,21 +80,20 @@ app.post('/login', async (req, res) => {
     };
 });
 
-// Provjera tokena
-const verifyToken = (req, res, next) => {
-  const token = req.cookies.token || req.headers['authorization'];
+app.get('/login/auth-status', (req, res) => {
+  const token = req.headers['authorization'].split(' ')[1];
 
-  if (!token) return res.status(401).json({ isAuthenticated: false });
+  if (!token) {
+    return res.status(401).json({ userExists: false });
+  }
 
-  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
-    if (err) return res.status(403).json({ isAuthenticated: false });
-    req.user = decoded;
-    next();
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ userExists: false });
+    }
+
+    res.status(200).json({ userExists: true });
   });
-};
-
-app.get('/login/auth-status', verifyToken, (req, res) => { // Provjera autentikacije
-  res.json({ isAuthenticated: true, user: req.user });
 });
 
 app.post('/logout', (req, res) => {
